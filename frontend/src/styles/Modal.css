@@ -1,0 +1,284 @@
+/* Modal.css */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #2a4c6791; /* semi-transparent dark */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-container {
+  background-color: #fff;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transform: scale(0.8);
+  animation: popIn 0.3s forwards;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #41d8d0, #2d7daa);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 20px;
+  font-size: 1rem;
+  color: #333;
+  text-align: center;
+}
+
+.modal-footer {
+  padding: 12px 20px;
+  text-align: right;
+  background-color: #f9f9f9;
+}
+
+.modal-ok-btn {
+  background: #2d7daa;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-ok-btn:hover {
+  background: #2a4c67;
+}
+
+/* Spinner for loading */
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #41d8d0;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success content */
+.success-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.success-content h3 {
+  color: #2d7daa;
+  margin: 12px 0 5px;
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+}
+
+.success-content p {
+  color: #2a4c67;
+  font-size: 0.95rem;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Animasi Checkmark Modern === */
+.success-checkmark {
+  width: 80px;
+  height: 115px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.success-checkmark .check-icon {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  border-radius: 50%;
+  box-sizing: content-box;
+  border: 4px solid #41d8d0;
+}
+
+.check-icon::before,
+.check-icon::after {
+  content: "";
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(65, 216, 208, 0.15);
+  animation: pulse 1.4s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.icon-line {
+  height: 5px;
+  background-color: #41d8d0;
+  display: block;
+  border-radius: 2px;
+  position: absolute;
+  z-index: 10;
+}
+
+.line-tip {
+  width: 25px;
+  left: 14px;
+  top: 46px;
+  transform: rotate(45deg);
+  animation: tipIn 0.4s ease forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.line-long {
+  width: 47px;
+  right: 8px;
+  top: 38px;
+  transform: rotate(-45deg);
+  animation: longIn 0.4s ease forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+@keyframes tipIn {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 25px;
+    opacity: 1;
+  }
+}
+
+@keyframes longIn {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 47px;
+    opacity: 1;
+  }
+}
+
+/* Error message */
+.error-message {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+/* Variants (kept original gradients) */
+.modal-info .modal-header {
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+}
+
+.modal-warning .modal-header {
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+}
+
+.modal-error .modal-header {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .modal-container {
+    width: 95%;
+  }
+
+  .modal-header, .modal-footer {
+    padding: 12px 15px;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .success-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .success-checkmark {
+    width: 60px;
+    height: 90px;
+  }
+
+  .modal-ok-btn {
+    width: 100%;
+  }
+}
