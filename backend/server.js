@@ -1,31 +1,37 @@
 // ========================= IMPORT MODULE =========================
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const axios = require("axios");
+const multer = require("multer");
+require("dotenv").config();
 
-// ========================= KONFIGURASI DASAR =========================
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
+const SERVER_HOST = process.env.SERVER_HOST || "0.0.0.0";
+const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL;
 
-// Ganti URL ini dengan Web App URL Google Apps Script kamu
-const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzfvqRBY-U0fpmbXLnyYwroMtDioL5p17BVr1PkboRGxcAv7_ZRr4FnPliJUBMMYN6W/exec";
+// ========================= CORS =========================
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// ========================= SIGNUP =========================
-app.post("/api/signup", async (req, res) => {
+// ========================= MULTER =========================
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// ========================= REGISTER =========================
+app.post("/api/register", async (req, res) => {
   try {
     const { email, password, name } = req.body;
     if (!email || !password || !name) {
-      return res.status(400).json({
-        result: "error",
-        message: "Email, password, dan nama wajib diisi!",
-      });
+      return res.status(400).json({ result: "error", message: "Email, password, dan nama wajib diisi!" });
     }
 
     const response = await axios.post(GOOGLE_SCRIPT_URL, {
@@ -37,20 +43,15 @@ app.post("/api/signup", async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    console.error("❌ Error signup:", error.message);
-    res.status(500).json({ result: "error", message: error.message });
+    console.error("❌ Error register:", error.message);
+    res.status(500).json({ result: "error", message: "Terjadi kesalahan saat registrasi." });
   }
 });
 
-// ========================= LOGIN USER =========================
+// ========================= LOGIN =========================
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ result: "error", message: "Email dan password wajib diisi!" });
-    }
 
     const response = await axios.post(GOOGLE_SCRIPT_URL, {
       action: "login",
@@ -61,97 +62,84 @@ app.post("/api/login", async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("❌ Error login:", error.message);
-    res
-      .status(500)
-      .json({ result: "error", message: "Terjadi kesalahan saat login." });
+    res.status(500).json({ result: "error", message: "Terjadi kesalahan saat login." });
   }
 });
 
-// ========================= LOGIN ADMIN =========================
-app.post("/api/admin/login", async (req, res) => {
+// ========================= KPI BATCH (VALIDATED) =========================
+app.post("/api/kpi-batch", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ result: "error", message: "Email dan password wajib diisi!" });
-    }
+    const { indikator_list, nama } = req.body;
 
-    // Aksi baru untuk cek admin
-    const response = await axios.post(GOOGLE_SCRIPT_URL, {
-      action: "adminLogin",
-      email,
-      password,
-    });
-
-    res.json(response.data);
-  } catch (error) {
-    console.error("❌ Error admin login:", error.message);
-    res
-      .status(500)
-      .json({ result: "error", message: "Terjadi kesalahan saat login admin." });
-  }
-});
-
-// ========================= LOGIN GOOGLE ADMIN =========================
-app.post("/api/admin/google-login", async (req, res) => {
-  try {
-    const { email, name, photo } = req.body;
-    if (!email || !name) {
-      return res
-        .status(400)
-        .json({ result: "error", message: "Email dan nama wajib dikirim!" });
-    }
-
-    // Kirim ke Apps Script untuk validasi apakah email admin terdaftar
-    const response = await axios.post(GOOGLE_SCRIPT_URL, {
-      action: "adminGoogleLogin",
-      email,
-      name,
-      photo,
-    });
-
-    res.json(response.data);
-  } catch (error) {
-    console.error("❌ Error admin google login:", error.message);
-    res.status(500).json({
-      result: "error",
-      message: "Terjadi kesalahan saat login Google admin.",
-    });
-  }
-});
-
-// ========================= SAVE USER GOOGLE =========================
-app.post("/api/save-user", async (req, res) => {
-  try {
-    const { name, email, photo } = req.body;
-    if (!email || !name) {
+    if (!Array.isArray(indikator_list) || indikator_list.length === 0) {
       return res.status(400).json({
         result: "error",
-        message: "Email dan nama wajib dikirim!",
+        message: "Indikator KPI tidak valid.",
       });
     }
 
-    const response = await axios.post(GOOGLE_SCRIPT_URL, {
-      action: "save-user",
-      name,
-      email,
-      photo,
+    // 🔹 Ambil data indikator master dari spreadsheet
+    const indikatorResponse = await axios.post(GOOGLE_SCRIPT_URL, {
+      action: "getIndikatorData",
     });
 
-    res.json({
-      result: "success",
-      message: "User berhasil disimpan",
-      user: { name, email, photo },
-      scriptResponse: response.data,
-    });
+    if (indikatorResponse.data.result !== "success") {
+      return res.status(500).json({
+        result: "error",
+        message: "Gagal validasi indikator (master data).",
+      });
+    }
+
+    const indikatorMaster = indikatorResponse.data.message || [];
+
+    // 🔐 VALIDASI TARGET
+    for (const item of indikator_list) {
+      const master = indikatorMaster.find(
+        (m) =>
+          m.nama === nama &&
+          m.indikator_kpi === item.indikator_kpi
+      );
+
+      if (!master) {
+        return res.status(400).json({
+          result: "error",
+          message: `Indikator "${item.indikator_kpi}" tidak ditemukan.`,
+        });
+      }
+
+      const targetAsli = String(master.target || "").toLowerCase();
+      const targetDikirim = String(item.target || "").toLowerCase();
+
+      const isFluktuatif = targetAsli.includes("fluktuatif");
+
+      // ❌ Target diubah padahal bukan fluktuatif
+      if (!isFluktuatif && targetAsli !== targetDikirim) {
+        return res.status(400).json({
+          result: "error",
+          message: `Target untuk indikator "${item.indikator_kpi}" tidak boleh diubah.`,
+        });
+      }
+    }
+
+    // ✅ Lolos validasi → kirim ke Apps Script
+    const payload = {
+      action: "kpiBatch",
+      ...req.body,
+    };
+
+    const response = await axios.post(GOOGLE_SCRIPT_URL, payload);
+    res.json(response.data);
+
   } catch (error) {
-    console.error("❌ Error save-user:", error.message);
-    res.status(500).json({ result: "error", message: error.message });
+    console.error("❌ Error KPI Batch:", error.message);
+    res.status(500).json({
+      result: "error",
+      message: "Gagal mengirim KPI.",
+    });
   }
 });
 
-// ========================= GET INDIKATOR DATA =========================
+// ========================= GET INDIKATOR =========================
 app.get("/api/indikator-data", async (req, res) => {
   try {
     const response = await axios.post(GOOGLE_SCRIPT_URL, {
@@ -159,55 +147,138 @@ app.get("/api/indikator-data", async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    console.error("❌ Error get indikator data:", error.message);
+    console.error("❌ Error indikator:", error.message);
     res.status(500).json({
       result: "error",
-      message: "Gagal mengambil data indikator!",
+      message: "Gagal mengambil indikator!",
     });
   }
 });
 
-// ========================= INPUT KPI BATCH =========================
-app.post("/api/kpi-batch", async (req, res) => {
+// ========================= GET KPI MILIK USER =========================
+app.get("/api/kpi-my", async (req, res) => {
   try {
-    const { email, password, divisi, nama, unit, tanda_tangan, indikator_list } =
-      req.body;
+    const { email } = req.query;
 
-    if (!email || !password || !Array.isArray(indikator_list)) {
+    if (!email) {
       return res.status(400).json({
         result: "error",
-        message: "Email, password, dan indikator_list wajib dikirim!",
+        message: "Email wajib dikirim",
       });
     }
 
-    // Gunakan hanya endpoint kpiBatch di Apps Script
-    const payload = {
-      action: "kpiBatch",
+    const response = await axios.post(GOOGLE_SCRIPT_URL, {
+      action: "getKpiByUser", // 🔥 SAMA PERSIS DENGAN APPS SCRIPT
       email,
-      password,
-      divisi,
-      nama,
-      unit,
-      tanda_tangan,
-      indikator_list,
-    };
-
-    const response = await axios.post(GOOGLE_SCRIPT_URL, payload, {
-      headers: { "Content-Type": "application/json" },
-      maxBodyLength: Infinity,
     });
 
     res.json(response.data);
   } catch (error) {
-    console.error("❌ Error input KPI batch:", error.message);
+    console.error("❌ Error get KPI user:", error.response?.data || error.message);
     res.status(500).json({
       result: "error",
-      message: "Gagal mengirim batch KPI.",
+      message: "Gagal mengambil KPI user",
     });
   }
 });
 
+// ========================= UPDATE KPI =========================
+app.post("/api/kpi-update", upload.single("buktiFile"), async (req, res) => {
+  try {
+    const { kpiKey, actual, email } = req.body;
+    const buktiFile = req.file;
+
+    if (!kpiKey || !email) {
+      return res.status(400).json({
+        result: "error",
+        message: "ID KPI dan email wajib dikirim!",
+      });
+    }
+
+    let buktiBase64 = "";
+    let mimeType = "";
+    let filename = "";
+
+    // Jika ada file bukti → convert ke Base64
+    if (buktiFile) {
+      buktiBase64 = buktiFile.buffer.toString("base64");
+      mimeType = buktiFile.mimetype;
+      filename = buktiFile.originalname;
+    }
+
+    // Kirim ke Apps Script
+    const response = await axios.post(GOOGLE_SCRIPT_URL, {
+      action: "updateKPI", // 🔥 HARUS SAMA
+      id: kpiKey,
+      actual,
+      email,
+      bukti: buktiBase64
+        ? `data:${mimeType};base64,${buktiBase64}`
+        : "",
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("❌ Error update KPI:", error.response?.data || error.message);
+    res.status(500).json({
+      result: "error",
+      message: "Gagal update KPI",
+    });
+  }
+});
+
+// ========================= GET TEAM KPI (FINAL) =========================
+app.post("/api/team-kpi", async (req, res) => {
+  try {
+    let { nama } = req.body;
+
+    if (!nama || typeof nama !== "string") {
+      return res.status(400).json({
+        result: "error",
+        message: "Nama viewer wajib dikirim",
+      });
+    }
+
+    // 🔹 Normalisasi input (WAJIB)
+    nama = nama.trim();
+
+    const response = await axios.post(
+      GOOGLE_SCRIPT_URL,
+      {
+        action: "getTeamKPI",
+        nama,
+      },
+      {
+        timeout: 15000, // ⏱️ 15 detik
+      }
+    );
+
+    if (!response.data || response.data.result !== "success") {
+      return res.status(400).json(
+        response.data || {
+          result: "error",
+          message: "Gagal mengambil KPI team",
+        }
+      );
+    }
+
+    res.json(response.data);
+
+  } catch (error) {
+    console.error(
+      "❌ Error get team KPI:",
+      error.response?.data || error.message
+    );
+
+    res.status(500).json({
+      result: "error",
+      message: "Server gagal memproses KPI team",
+    });
+  }
+});
+
+
 // ========================= START SERVER =========================
-app.listen(PORT, () => {
-  console.log(`✅ Server berjalan di http://localhost:${PORT}`);
+app.listen(PORT, SERVER_HOST, () => {
+  console.log(`🚀 Server berjalan di http://${SERVER_HOST}:${PORT}`);
 });

@@ -559,3 +559,85 @@
     transform: rotate(360deg);
   }
 }
+
+/* ===============================
+   INPUT TERKUNCI / READ-ONLY
+   =============================== */
+.rsia-input-locked {
+  background-color: #f1f3f5 !important; /* abu-abu konsisten */
+  color: #6c757d !important;            /* teks abu-abu */
+  border: 1px solid #ced4da !important;
+  cursor: not-allowed;
+}
+
+/* Tetap abu-abu saat focus */
+.rsia-input-locked:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #ced4da !important;
+  background-color: #f1f3f5 !important;
+}
+
+/* Tetap abu-abu saat hover */
+.rsia-input-locked:hover {
+  background-color: #f1f3f5 !important;
+}
+
+/* Untuk SELECT juga (penting) */
+select.rsia-input-locked {
+  background-color: #f1f3f5 !important;
+  color: #6c757d !important;
+  pointer-events: none; /* benar-benar tidak bisa diinteraksi */
+}
+
+/* ================== TARGET LABEL ================== */
+.rsia-target-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+/* ================== CUSTOM CHECKBOX ================== */
+.rsia-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rsia-checkbox-wrapper input {
+  display: none;
+}
+
+.rsia-checkbox-custom {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #adb5bd;
+  border-radius: 4px;
+  background-color: #ffffff;
+  position: relative;
+}
+
+.rsia-checkbox-wrapper input:checked + .rsia-checkbox-custom {
+  background-color: #4a90e2;
+  border-color: #4a90e2;
+}
+
+.rsia-checkbox-wrapper input:checked + .rsia-checkbox-custom::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.rsia-checkbox-text {
+  font-size: 13px;
+  color: #495057;
+}

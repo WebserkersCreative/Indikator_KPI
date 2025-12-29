@@ -3,50 +3,62 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
+import ScreenLoading from "./components/ScreenLoading";
 
 function App() {
   const [user, setUser] = useState(null);
   const [hasLoggedBefore, setHasLoggedBefore] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true); // loading sementara baca localStorage
 
-  // Saat App mount, cek localStorage
+  // ===================== CEK LOCALSTORAGE SAAT MOUNT =====================
   useEffect(() => {
     const storedUser = localStorage.getItem("userData");
     const loggedOut = localStorage.getItem("loggedOut");
 
     if (storedUser && !loggedOut) {
-      // Jika ada user tersimpan dan belum logout → set ke state
       setUser(JSON.parse(storedUser));
     }
 
     if (storedUser) {
-      // Tandai bahwa user pernah login
       setHasLoggedBefore(true);
     }
+
+    setLoadingUser(false); // selesai baca user
   }, []);
 
+  // ===================== HANDLE LOGIN =====================
   const handleLogin = (userData) => {
     setUser(userData);
     localStorage.setItem("userData", JSON.stringify(userData));
-    localStorage.removeItem("loggedOut"); // hapus flag logout supaya auto-login aktif
+    localStorage.removeItem("loggedOut");
   };
 
+  // ===================== HANDLE LOGOUT =====================
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("userData");
-    localStorage.setItem("loggedOut", "true"); // tandai bahwa user sudah logout
+    localStorage.setItem("loggedOut", "true");
   };
 
-  // Proteksi route user biasa
+  // ===================== PROTEKSI ROUTE USER =====================
   const ProtectedUserRoute = ({ element }) => {
+    if (loadingUser) return <ScreenLoading />; // tampilkan loading sementara cek user
     return user ? element : <Navigate to="/" replace />;
   };
 
-  // Proteksi route admin
+  // ===================== PROTEKSI ROUTE ADMIN =====================
   const ProtectedAdminRoute = ({ element }) => {
+    if (loadingUser) return <ScreenLoading />; // tampilkan loading sementara cek user
     if (!user) return <Navigate to="/" replace />;
     if (!user.isAdmin) return <Navigate to="/homepage" replace />;
     return element;
   };
+
+  // ===================== RENDER ROUTES =====================
+  if (loadingUser) {
+    // sementara baca user
+    return <ScreenLoading />;
+  }
 
   return (
     <Router>
@@ -54,7 +66,12 @@ function App() {
         {/* Halaman Login / Auth */}
         <Route
           path="/"
-          element={<AuthPage onLogin={handleLogin} hasLoggedBefore={hasLoggedBefore} />}
+          element={
+            <AuthPage
+              onLogin={handleLogin}
+              hasLoggedBefore={hasLoggedBefore}
+            />
+          }
         />
 
         {/* Halaman User */}

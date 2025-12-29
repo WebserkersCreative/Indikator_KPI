@@ -1,4 +1,3 @@
-// Modal.jsx
 import React, { useEffect, useState } from "react";
 import "../styles/Modal.css";
 
@@ -7,80 +6,118 @@ export default function Modal({
   title,
   message,
   onClose,
-  type = "info", // info, success, error, loading
+  type = "info",
   isLoading = false,
+  onConfirm,
 }) {
-  const [show, setShow] = useState(false);
+  const [visible, setVisible] = useState(false);
 
+  // Fade animation control
   useEffect(() => {
-    if (isOpen) setShow(true);
+    if (isOpen) setVisible(true);
     else {
-      const timer = setTimeout(() => setShow(false), 300);
+      const timer = setTimeout(() => setVisible(false), 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  if (!isOpen && !show) return null;
+  if (!isOpen && !visible) return null;
 
-  let modalClass = `modal-container modal-${type}`;
-  if (isOpen) modalClass += " fade-in";
-  else modalClass += " fade-out";
+  const modalClass = `modal-container modal-${type} ${
+    isOpen ? "fade-in" : "fade-out"
+  }`;
+
+  const defaultTitle =
+    type === "loading"
+      ? "Memproses..."
+      : type === "success"
+      ? "Berhasil!"
+      : type === "error"
+      ? "Terjadi Kesalahan"
+      : type === "finish"
+      ? "Selesai"
+      : "Informasi";
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div
+      className="modal-backdrop"
+      onClick={type === "loading" ? undefined : onClose}
+    >
       <div
         className={modalClass}
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* ================= HEADER ================= */}
         <div className="modal-header">
-          <h3>
-            {type === "success" ? "Berhasil!" : title}
-          </h3>
-          <button
-            className="modal-close-btn"
-            onClick={onClose}
-            aria-label="Tutup modal"
-          >
-            &times;
-          </button>
+          <h3>{title || defaultTitle}</h3>
+
+          {type !== "loading" && (
+            <button className="modal-close-btn" onClick={onClose}>
+              &times;
+            </button>
+          )}
         </div>
 
+        {/* ================= BODY ================= */}
         <div className="modal-body">
-          {isLoading && (
+          {/* LOADING */}
+          {type === "loading" && isLoading && (
             <div className="loading-section">
               <div className="spinner"></div>
-              <span>Menyimpan data...</span>
+              <span>{message || "Mohon tunggu sebentar..."}</span>
             </div>
           )}
 
-          {!isLoading && type === "success" && (
+          {/* SUCCESS */}
+          {type === "success" && !isLoading && (
             <div className="success-content animated-success">
               <div className="success-checkmark">
                 <div className="check-icon">
                   <span className="icon-line line-tip"></span>
                   <span className="icon-line line-long"></span>
-                  <div className="icon-circle"></div>
-                  <div className="icon-fix"></div>
                 </div>
               </div>
-              <h3>Terima kasih!</h3>
-              <p>{message || "KPI Anda telah berhasil disimpan."}</p>
+              <h3>{title || "Berhasil"}</h3>
+              <p>{message || "Data berhasil diproses."}</p>
             </div>
           )}
 
-          {!isLoading && type === "error" && (
-            <p className="error-message">{message}</p>
+          {/* ERROR */}
+          {type === "error" && !isLoading && (
+            <p className="error-message">{message || "Terjadi kesalahan."}</p>
           )}
 
-          {!isLoading && type === "info" && <p>{message}</p>}
+          {/* INFO */}
+          {type === "info" && !isLoading && message && <p>{message}</p>}
+
+          {/* FINISH */}
+          {type === "finish" && !isLoading && <p>{message || "Selesai."}</p>}
         </div>
 
-        {!isLoading && (
+        {/* ================= FOOTER ================= */}
+        {!onConfirm && type !== "loading" && (
           <div className="modal-footer">
             <button className="modal-ok-btn" onClick={onClose}>
-              OK
+              {type === "finish" ? "Selesai" : "OK"}
+            </button>
+          </div>
+        )}
+
+        {onConfirm && (
+          <div className="modal-footer">
+            <button
+              className="modal-ok-btn"
+              onClick={() => {
+                onConfirm();
+                onClose();
+              }}
+            >
+              Ya
+            </button>
+            <button className="modal-ok-btn" onClick={onClose}>
+              Batal
             </button>
           </div>
         )}

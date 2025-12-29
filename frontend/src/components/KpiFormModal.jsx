@@ -5,6 +5,8 @@ import "../styles/KpiFormModal.css";
 import "../styles/Modal.css";
 
 export default function InputKPIModal({ user, onClose }) {
+  const API = process.env.REACT_APP_API_BASE_URL || "";
+
   const [indikatorData, setIndikatorData] = useState([]);
   const [form, setForm] = useState({
     nama: "",
@@ -17,22 +19,29 @@ export default function InputKPIModal({ user, onClose }) {
     actual: "",
   });
 
+  // ===== TARGET CONTROL =====
+  const [editTarget, setEditTarget] = useState(false);
+  const [isTargetFluktuatif, setIsTargetFluktuatif] = useState(false);
+
+  // FILE STATES (UPDATE SUPPORT PDF)
   const [buktiNilaiPreview, setBuktiNilaiPreview] = useState(null);
   const [buktiNilaiName, setBuktiNilaiName] = useState("");
   const [buktiNilaiBase64, setBuktiNilaiBase64] = useState("");
-  const [tandaTanganData, setTandaTanganData] = useState("");
+  const [buktiIsPDF, setBuktiIsPDF] = useState(false);
+
+  const [drawing, setDrawing] = useState("");
   const canvasRef = useRef(null);
-  const [drawing, setDrawing] = useState(false);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [filteredNames, setFilteredNames] = useState([]);
   const [filteredIndicators, setFilteredIndicators] = useState([]);
   const [batchList, setBatchList] = useState([]);
   const inputRef = useRef(null);
+  const fileRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
+  const [loadingModal, setLoadingModal] = useState(false);
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
@@ -45,20 +54,36 @@ export default function InputKPIModal({ user, onClose }) {
     setModalOpen(true);
   };
 
+  const showFinishModal = () => {
+    setModalTitle("Selesai");
+    setModalMessage("Terima kasih telah mengisi KPI. Pengisian KPI berhasil disimpan.");
+    setModalType("finish");
+    setModalOpen(true);
+  };
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (loading) {
+        e.preventDefault();
+        e.returnValue = "Data KPI sedang disimpan. Apakah Anda yakin ingin meninggalkan halaman?";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [loading]);
+
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/indikator-data")
+      .get(`${API}/api/indikator-data`)
       .then((res) => {
         if (res.data.result === "success") {
           setIndikatorData(res.data.message);
         }
       })
       .catch((err) => console.error("Error load data:", err));
-  }, []);
+  }, [API]);
 
-  const uniqueNames = [
-    ...new Set(indikatorData.map((item) => item.nama).filter(Boolean)),
-  ];
+  const uniqueNames = [...new Set(indikatorData.map((item) => item.nama).filter(Boolean))];
 
   const handleNamaChange = (e) => {
     const namaInput = e.target.value;
@@ -111,30 +136,41 @@ export default function InputKPIModal({ user, onClose }) {
     setFilteredIndicators(filtered);
   };
 
-  const handleIndikatorChange = (e) => {
-    const indikator = e.target.value;
-    const data = indikatorData.find(
-      (d) => d.nama === form.nama && d.indikator_kpi === indikator
-    );
+const handleIndikatorChange = (e) => {
+  const indikator = e.target.value;
 
-    if (data) {
-      setForm({
-        ...form,
-        area_kinerja: data.area_kinerja,
-        indikator_kpi: data.indikator_kpi,
-        target: data.target,
-        satuan: data.satuan,
-      });
-    } else {
-      setForm({ ...form, indikator_kpi: indikator });
-    }
-  };
+  const data = indikatorData.find(
+    (d) => d.nama === form.nama && d.indikator_kpi === indikator
+  );
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  if (!data) {
+    setForm({ ...form, indikator_kpi: indikator });
+    setIsTargetFluktuatif(false);
+    return;
+  }
 
+  const fluktuatif = checkIfTargetIsFluktuatif(data.target);
+
+  setIsTargetFluktuatif(fluktuatif);
+
+  setForm({
+    ...form,
+    indikator_kpi: data.indikator_kpi,
+    area_kinerja: data.area_kinerja,
+    target: data.target,
+    satuan: data.satuan,
+  });
+};
+
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // ====================== UPDATE FILE HANDLING (SUPPORT PDF) ======================
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+
+    setBuktiIsPDF(false);
+
     if (!file) {
       setBuktiNilaiPreview(null);
       setBuktiNilaiName("");
@@ -142,92 +178,34 @@ export default function InputKPIModal({ user, onClose }) {
       return;
     }
 
-    try {
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "application/pdf"];
+
+    if (!allowedTypes.includes(file.type)) {
+      showModal("Perhatian", "File harus berupa JPG, JPEG, PNG, atau PDF.", "error");
+      e.target.value = null;
+      setBuktiNilaiPreview(null);
+      setBuktiNilaiName("");
+      setBuktiNilaiBase64("");
+      return;
+    }
+
+    setBuktiNilaiName(file.name);
+
+    if (file.type === "application/pdf") {
+      setBuktiIsPDF(true);
+      setBuktiNilaiPreview(null);
+    } else {
       const url = URL.createObjectURL(file);
       setBuktiNilaiPreview(url);
-      setBuktiNilaiName(file.name);
-    } catch (err) {
-      setBuktiNilaiPreview(null);
-      setBuktiNilaiName(file.name || "");
     }
 
     const reader = new FileReader();
     reader.onload = (ev) => {
       setBuktiNilaiBase64(ev.target.result);
     };
-    reader.onerror = () => {
-      setBuktiNilaiBase64("");
-    };
     reader.readAsDataURL(file);
   };
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 2;
-
-    const getPos = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.clientX ?? (e.touches && e.touches[0]?.clientX);
-      const clientY = e.clientY ?? (e.touches && e.touches[0]?.clientY);
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    };
-
-    const startDrawing = (e) => {
-      const pos = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-      setDrawing(true);
-    };
-
-    const draw = (e) => {
-      if (!drawing) return;
-      const pos = getPos(e);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    };
-
-    const endDrawing = () => {
-      if (!drawing) return;
-      setDrawing(false);
-      setTandaTanganData(canvas.toDataURL());
-    };
-
-    canvas.addEventListener("mousedown", startDrawing);
-    canvas.addEventListener("mousemove", draw);
-    canvas.addEventListener("mouseup", endDrawing);
-    canvas.addEventListener("mouseleave", endDrawing);
-
-    const startTouch = (e) => {
-      e.preventDefault();
-      startDrawing(e.touches ? e.touches[0] : e);
-    };
-    const moveTouch = (e) => {
-      e.preventDefault();
-      draw(e.touches ? e.touches[0] : e);
-    };
-    const endTouch = (e) => {
-      e.preventDefault();
-      endDrawing();
-    };
-
-    canvas.addEventListener("touchstart", startTouch, { passive: false });
-    canvas.addEventListener("touchmove", moveTouch, { passive: false });
-    canvas.addEventListener("touchend", endTouch);
-
-    return () => {
-      canvas.removeEventListener("mousedown", startDrawing);
-      canvas.removeEventListener("mousemove", draw);
-      canvas.removeEventListener("mouseup", endDrawing);
-      canvas.removeEventListener("mouseleave", endDrawing);
-
-      canvas.removeEventListener("touchstart", startTouch);
-      canvas.removeEventListener("touchmove", moveTouch);
-      canvas.removeEventListener("touchend", endTouch);
-    };
-  }, [drawing]);
+  // ==============================================================================
 
   const handleAddBatch = () => {
     if (!form.indikator_kpi || !form.actual) return;
@@ -249,6 +227,7 @@ export default function InputKPIModal({ user, onClose }) {
         ...form,
         bukti_nilai_name: buktiNilaiName || "",
         bukti_nilai: buktiNilaiBase64 || "",
+        bukti_pdf: buktiIsPDF ? true : false,
       },
     ]);
 
@@ -260,9 +239,13 @@ export default function InputKPIModal({ user, onClose }) {
       satuan: "",
       actual: "",
     });
+
     setBuktiNilaiPreview(null);
     setBuktiNilaiName("");
     setBuktiNilaiBase64("");
+    setBuktiIsPDF(false);
+
+    if (fileRef.current) fileRef.current.value = null;
   };
 
   const clearSignature = () => {
@@ -270,72 +253,135 @@ export default function InputKPIModal({ user, onClose }) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setTandaTanganData("");
+    setDrawing("");
   };
+
+  const startDrawing = (e) => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+
+    let rect = canvas.getBoundingClientRect();
+    let x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    let y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+
+    const move = (ev) => {
+      let nx = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left;
+      let ny = (ev.touches ? ev.touches[0].clientY : ev.clientY) - rect.top;
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+    };
+
+    const up = () => {
+      setDrawing(canvas.toDataURL());
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+      window.removeEventListener("touchmove", move);
+      window.removeEventListener("touchend", up);
+    };
+
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+    window.addEventListener("touchmove", move);
+    window.addEventListener("touchend", up);
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resizeCanvas = () => {
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(ratio, ratio);
+      if (drawing) {
+        const img = new Image();
+        img.src = drawing;
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+        };
+      }
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, [drawing]);
 
   const handleSubmit = async () => {
     if (!form.nama || batchList.length === 0) {
       showModal("Perhatian", "Pilih nama dan tambahkan minimal 1 indikator", "error");
       return;
     }
-
-    if (!tandaTanganData) {
+    if (!drawing) {
       showModal("Perhatian", "Tanda tangan wajib diisi.", "error");
       return;
     }
 
-    // pastikan semua bukti nilai ada
-    const missingBukti = batchList.some((b) => !b.bukti_nilai);
-    if (missingBukti) {
-      showModal("Perhatian", "Semua indikator harus memiliki bukti nilai.", "error");
-      return;
-    }
+    const payload = {
+      email: user.email,
+      password: user.password,
+      nama: form.nama,
+      divisi: form.divisi,
+      unit: form.unit,
+      tanda_tangan: drawing,
+      indikator_list: batchList,
+    };
 
     try {
       setLoading(true);
+      setLoadingModal(true);
 
-      const payload = {
-        email: user.email,
-        password: user.password,
-        nama: form.nama,
-        divisi: form.divisi,
-        unit: form.unit,
-        tanda_tangan: tandaTanganData || "",
-        indikator_list: batchList,
-      };
+      const res = await axios.post(`${API}/api/kpi-batch`, payload);
 
-      const res = await axios.post("http://localhost:5000/api/kpi-batch", payload);
+      setLoadingModal(false);
 
       if (res.data.result === "success") {
-        showModal("Berhasil", res.data.message, "success");
-        onClose();
+        showFinishModal();
       } else {
         showModal("Gagal", res.data.message, "error");
       }
     } catch (err) {
+      setLoadingModal(false);
+
       const serverMsg = err.response?.data?.message
         ? ` — ${err.response.data.message}`
         : "";
+
       showModal("Gagal", "Error input KPI: " + err.message + serverMsg, "error");
-      console.error("Submit payload:", {
-        email: user.email,
-        nama: form.nama,
-        divisi: form.divisi,
-        unit: form.unit,
-        tanda_tangan: tandaTanganData ? "[base64]" : "",
-        indikator_list: batchList,
-      });
+      console.error("Submit payload error:", err);
     } finally {
       setLoading(false);
     }
   };
+
+  // ===== CEK FLUKTUATIF =====
+  const checkIfTargetIsFluktuatif = (target) => {
+    return typeof target === "string" && target.toLowerCase().includes("fluktuatif");
+  };
+
+
 
   return (
     <div className="rsia-modal-backdrop">
       <div className="rsia-modal" role="dialog" aria-modal="true" aria-labelledby="kpi-title">
         <div className="rsia-modal-header">
           <h5 id="kpi-title">Input Indikator KPI</h5>
-          <button className="rsia-modal-close" onClick={onClose} aria-label="Tutup modal" disabled={loading}>
+          <button
+            className="rsia-modal-close"
+            onClick={onClose}
+            aria-label="Tutup modal"
+            disabled={loading}
+          >
             &times;
           </button>
         </div>
@@ -376,11 +422,11 @@ export default function InputKPIModal({ user, onClose }) {
           <div className="rsia-form-row">
             <div className="rsia-form-group">
               <label>Divisi</label>
-              <input value={form.divisi} placeholder="Divisi" readOnly />
+              <input value={form.divisi} placeholder="Divisi" readOnly className="rsia-input-locked" />
             </div>
             <div className="rsia-form-group">
               <label>Unit</label>
-              <input value={form.unit} placeholder="Unit" readOnly />
+              <input value={form.unit} placeholder="Unit" readOnly className="rsia-input-locked" />
             </div>
           </div>
 
@@ -395,7 +441,9 @@ export default function InputKPIModal({ user, onClose }) {
             >
               <option value="">-- Pilih Indikator --</option>
               {filteredIndicators
-                .filter((f) => !batchList.some((b) => b.indikator_kpi === f.indikator_kpi))
+                .filter(
+                  (f) => !batchList.some((b) => b.indikator_kpi === f.indikator_kpi)
+                )
                 .map((item, index) => (
                   <option key={index} value={item.indikator_kpi}>
                     {item.indikator_kpi}
@@ -407,25 +455,50 @@ export default function InputKPIModal({ user, onClose }) {
           {/* AREA, TARGET, SATUAN, ACTUAL */}
           <div className="rsia-form-group">
             <label>Area Kinerja</label>
-            <input
-              name="area_kinerja"
-              value={form.area_kinerja}
-              placeholder="Area Kinerja"
-              readOnly
-            />
+            <input name="area_kinerja" value={form.area_kinerja} placeholder="Area Kinerja" readOnly className="rsia-input-locked" />
           </div>
+
           <div className="rsia-form-row">
             <div className="rsia-form-group">
-              <label>Target</label>
-              <input name="target" value={form.target} placeholder="Target" readOnly />
+            <label>
+              Target
+              {isTargetFluktuatif && (
+                <>
+                  <input
+                    type="checkbox"
+                    checked={editTarget}
+                    onChange={(e) => setEditTarget(e.target.checked)}
+                    style={{ marginLeft: 10 }}
+                  />
+                  <span style={{ marginLeft: 5 }}>Ubah Target</span>
+                </>
+              )}
+            </label>
+
+            <input
+              name="target"
+              placeholder="Masukkan Nilai Target"
+              value={form.target}
+              onChange={handleChange}
+              readOnly={!isTargetFluktuatif || !editTarget}
+              disabled={loading}
+              className={
+                !isTargetFluktuatif || !editTarget
+                  ? "rsia-input-locked"
+                  : "rsia-input-editable"
+              }
+            />
             </div>
+
             <div className="rsia-form-group">
               <label>Satuan</label>
-              <input name="satuan" value={form.satuan} placeholder="Satuan" readOnly />
+              <input name="satuan" value={form.satuan} placeholder="Satuan" readOnly className="rsia-input-locked"/>
             </div>
+
             <div className="rsia-form-group">
               <label>Actual</label>
               <input
+                type="number"
                 name="actual"
                 value={form.actual}
                 placeholder="Masukkan nilai aktual"
@@ -437,29 +510,25 @@ export default function InputKPIModal({ user, onClose }) {
 
           {/* BUKTI NILAI */}
           <div className="rsia-form-group">
-            <label>Bukti Nilai</label>
-            <input type="file" onChange={handleFileChange} disabled={loading} />
-            {buktiNilaiPreview && (
+            <label>Bukti Nilai (jpg/png/pdf)</label>
+            <input type="file" ref={fileRef} onChange={handleFileChange} disabled={loading} />
+
+            {/* IF IMAGE → SHOW PREVIEW */}
+            {buktiNilaiPreview && !buktiIsPDF && (
               <div className="rsia-preview-wrap">
                 <div style={{ flex: "1 1 200px" }}>
                   <div className="rsia-preview-title">Preview ({buktiNilaiName})</div>
-                  <div>
-                    {buktiNilaiName && buktiNilaiName.toLowerCase().endsWith(".pdf") ? (
-                      <embed
-                        src={buktiNilaiPreview}
-                        width="100%"
-                        height="200px"
-                        type="application/pdf"
-                        className="rsia-preview"
-                      />
-                    ) : (
-                      <img
-                        src={buktiNilaiPreview}
-                        alt="preview"
-                        className="rsia-preview"
-                      />
-                    )}
-                  </div>
+                  <img src={buktiNilaiPreview} alt="preview" className="rsia-preview" />
+                </div>
+              </div>
+            )}
+
+            {/* IF PDF → SHOW ICON */}
+            {buktiIsPDF && (
+              <div className="rsia-preview-wrap" style={{ marginTop: "10px" }}>
+                <div className="rsia-preview-title">File PDF: {buktiNilaiName}</div>
+                <div style={{ fontSize: "14px", marginTop: "5px", color: "#333" }}>
+                  📄 PDF siap diunggah
                 </div>
               </div>
             )}
@@ -486,16 +555,14 @@ export default function InputKPIModal({ user, onClose }) {
                       <div className="indikator">{b.indikator_kpi}</div>
                       <div className="meta">
                         Actual: {b.actual} • Bukti: {b.bukti_nilai_name || "—"}
+                        {b.bukti_pdf && " (PDF)"}
                       </div>
                     </div>
-
                     <div className="right-actions">
                       <button
                         type="button"
                         className="delete-batch"
-                        onClick={() =>
-                          setBatchList((prev) => prev.filter((_, idx) => idx !== i))
-                        }
+                        onClick={() => setBatchList((prev) => prev.filter((_, idx) => idx !== i))}
                         aria-label={`Hapus ${b.indikator_kpi}`}
                         disabled={loading}
                       >
@@ -511,33 +578,34 @@ export default function InputKPIModal({ user, onClose }) {
           {/* TANDA TANGAN */}
           <div className="rsia-form-group">
             <label className="rsia-sign-label">Tanda Tangan</label>
-            <canvas ref={canvasRef} width={600} height={300} />
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={200}
+              onMouseDown={startDrawing}
+              onTouchStart={startDrawing}
+              style={{
+                border: "1px solid #ccc",
+                cursor: "crosshair",
+                width: "100%",
+                height: "200px",
+              }}
+            />
             <span className="rsia-sign-hint">Gambar tanda tangan di atas</span>
-
             <div className="rsia-canvas-footer">
-              <button
-                type="button"
-                className="clear-sign"
-                onClick={clearSignature}
-                disabled={loading}
-              >
+              <button type="button" className="clear-sign" onClick={clearSignature} disabled={loading}>
                 Hapus Tanda Tangan
               </button>
             </div>
           </div>
         </div>
 
-        {/* FOOTER */}
         <div className="rsia-modal-footer">
           <button onClick={onClose} disabled={loading}>
             Batal
           </button>
           <button onClick={handleSubmit} disabled={loading}>
-            {loading ? (
-              <div className="spinner"></div>
-            ) : (
-              "Simpan KPI"
-            )}
+            Simpan KPI
           </button>
         </div>
       </div>
@@ -548,7 +616,19 @@ export default function InputKPIModal({ user, onClose }) {
         title={modalTitle}
         message={modalMessage}
         type={modalType}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          if (modalType === "finish") onClose();
+        }}
+      />
+
+      <Modal
+        isOpen={loadingModal}
+        title="Menyimpan Data"
+        message="Mohon tunggu sebentar..."
+        type="loading"
+        isLoading={true}
+        onClose={null}
       />
     </div>
   );
