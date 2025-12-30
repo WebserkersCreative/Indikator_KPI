@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,3 +69,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+=======
+# Indikator_KPI
+Repositori ini berisi sistem atau kumpulan skrip untuk mengelola dan menganalisis Indikator Kinerja Utama (Key Performance Indicator / KPI) suatu organisasi, departemen, atau proyek. Tujuannya adalah membantu pengguna memantau performa berdasarkan metrik yang terukur dan relevan dengan tujuan strategis.
+>>>>>>> 18a1fa3974daa387cc8b62ee46acea0a96116eab

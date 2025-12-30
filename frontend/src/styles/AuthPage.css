@@ -1,0 +1,554 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+/* 🌐 GLOBAL STYLES */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #f6f5f7;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* 🧱 AUTH CONTAINER */
+.authpage {
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  width: 900px;
+  max-width: 100%;
+  min-height: 540px;
+  transition: all 0.5s ease;
+}
+
+/* 🌈 OVERLAY SECTION */
+.authpage .overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease-in-out;
+  z-index: 100;
+}
+
+.authpage .overlay {
+  background: url('../assets/header-anisa.jpg') no-repeat center center;
+  background-size: cover;
+  color: #fff;
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.authpage .overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 51, 102, 0.6);  /* Warna biru transparan */
+  z-index: 1;
+}
+
+.authpage.active .overlay-container {
+  transform: translateX(-100%);
+}
+
+.authpage.active .overlay {
+  transform: translateX(50%);
+}
+
+.authpage .overlay-panel {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  text-align: center;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  z-index: 2;  /* Pastikan teks berada di atas overlay */
+  transition: all 0.6s ease-in-out;
+}
+
+.authpage .overlay-panel h1 {
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+.authpage .overlay-panel p {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 20px 0 30px;
+}
+
+.authpage .overlay-left {
+  transform: translateX(-20%);
+}
+
+.authpage .overlay-right {
+  right: 0;
+  transform: translateX(0);
+}
+
+.authpage.active .overlay-left {
+  transform: translateX(0);
+}
+
+.authpage.active .overlay-right {
+  transform: translateX(20%);
+}
+
+
+/* 🌊 Gradient Animation */
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 📋 FORM CONTAINER */
+.authpage .form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transition: all 0.6s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.authpage .sign-in-container {
+  left: 0;
+  z-index: 2;
+}
+
+.authpage .sign-up-container {
+  left: 0;
+  opacity: 0;
+  z-index: 1;
+}
+
+.authpage.active .sign-up-container {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+}
+
+.authpage.active .sign-in-container {
+  transform: translateX(100%);
+  opacity: 0;
+  z-index: 1;
+}
+
+/* 🧾 FORM STYLE */
+.authpage form {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 50px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1),
+              0 4px 15px rgba(0, 170, 255, 0.15);
+  overflow: hidden;
+}
+
+/* 🧍‍♂️ TITLE */
+.authpage form h1 {
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #003366;
+  font-size: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 🖊 INPUTS */
+.authpage form input {
+  background: #f4f4f4;
+  border: 2px solid #ddd;
+  padding: 12px 15px;
+  margin: 10px 0;
+  width: 100%;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #333;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.authpage form input:focus {
+  border-color: #00aaff;
+  box-shadow: 0 0 8px rgba(0, 170, 255, 0.4);
+  background: #fff;
+}
+
+/* 🔘 BUTTON */
+.authpage form button {
+  border-radius: 30px;
+  border: 1px solid #00aaff;
+  background: linear-gradient(90deg, #003366, #00aaff);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 12px 40px;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.authpage form button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(0, 170, 255, 0.3);
+}
+
+/* 🔗 FORGOT PASSWORD */
+.authpage form a.forgot-password {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #003366;
+  position: relative;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.authpage form a.forgot-password::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #003366, #00aaff);
+  transition: width 0.3s ease;
+}
+
+.authpage form a.forgot-password:hover {
+  color: #00aaff;
+  transform: translateY(-2px);
+}
+
+.authpage form a.forgot-password:hover::after {
+  width: 100%;
+}
+
+/* 🌟 Tombol Ghost Simple */
+.authpage .overlay-panel .ghost,
+.authpage .overlay-panel .ghost1 {
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 12px 35px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+}
+
+/* Hover */
+.authpage .overlay-panel .ghost:hover,
+.authpage .overlay-panel .ghost1:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .authpage .overlay-panel .ghost,
+  .authpage .overlay-panel .ghost1 {
+    font-size: 1rem;
+    padding: 10px 25px;
+  }
+}
+
+/* Tombol ghost di bawah form untuk mobile */
+.mobile-ghost {
+  display: none; /* default hidden */
+  border: 1px solid #00aaff;
+  background: transparent;
+  color: #00aaff;
+  font-size: 1rem;
+  padding: 10px 25px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 15px;
+}
+
+.mobile-ghost:hover {
+  background: #00aaff;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .mobile-ghost {
+    display: block;
+    width: 100%;
+  }
+}
+
+/* ✨ REMEMBER ME (Responsif + Glow Effect) */
+.authpage form .remember {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 18px;
+  width: 100%;
+  gap: 12px; /* jarak antara checkbox dan teks */
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.authpage form .remember input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #00aaff;
+  border-radius: 5px;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0 rgba(0, 170, 255, 0); /* untuk animasi glow */
+}
+
+/* ✨ Glow saat hover */
+.authpage form .remember input[type="checkbox"]:hover {
+  border-color: #0099ff;
+  box-shadow: 0 0 8px rgba(0, 170, 255, 0.5);
+}
+
+/* ✨ Centang custom */
+.authpage form .remember input[type="checkbox"]:checked::after {
+  content: "✔";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -52%); /* posisi tepat di tengah */
+  font-size: 14px;
+  color: #00aaff;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+/* ✨ Glow aktif saat checkbox dicentang */
+.authpage form .remember input[type="checkbox"]:checked {
+  background: #e6f7ff;
+  border-color: #00aaff;
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.6);
+}
+
+/* Label teks Remember Me */
+.authpage form .remember label {
+  font-size: 0.95rem;
+  color: #333;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* Efek Glow teks saat hover atau aktif */
+.authpage form .remember:hover label {
+  color: #00aaff;
+  text-shadow: 0 0 8px rgba(0, 170, 255, 0.4);
+}
+
+/* Responsif untuk HP */
+@media (max-width: 480px) {
+  .authpage form .remember {
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .authpage form .remember input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+  .authpage form .remember label {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile (portrait & landscape) */
+@media (max-width: 768px) {
+  html, body {
+    display: block;
+    align-items: flex-start;
+  }
+
+  .authpage {
+    width: 100%;
+    min-height: 100dvh; /* viewport dinamis */
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .authpage .overlay-container {
+    display: none;
+  }
+
+  .authpage .form-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+    transform: none !important;
+    opacity: 1 !important;
+    padding: 30px 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .authpage form {
+    box-shadow: none;
+    max-width: 420px;
+    width: 100%;
+    padding: 30px 25px;
+    border-radius: 0;
+  }
+
+  .authpage form h1 {
+    font-size: 1.6rem;
+  }
+
+  .authpage form button {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .authpage form input {
+    font-size: 0.95rem;
+  }
+
+  /* === PENAMBAHAN KHUSUS MOBILE: Forgot password di bawah tombol Register === */
+  .authpage form a.forgot-password {
+    display: block;       /* pastikan tampil */
+    margin-top: 12px;     /* jarak dari tombol */
+    text-align: center;   /* rata tengah */
+  }
+}
+
+/* Small Phones (under 480px) */
+@media (max-width: 480px) {
+  .authpage form {
+    padding: 25px 20px;
+  }
+  .authpage form h1 {
+    font-size: 1.4rem;
+  }
+  .authpage form input {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  .authpage form button {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Spinner kecil untuk tombol */
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Add this to your AuthPage.css */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  color: #333;
+  z-index: 10;
+}
+.loading-overlay .spinner {
+  width: 30px;
+  height: 30px;
+  border-width: 4px;
+}
+
+/* ====================================================== */
+/* ✨ REGISTER FORM ADDONS – Sesuai gaya AuthPage */
+/* ====================================================== */
+
+.sign-up-container .switch-text {
+  margin-top: 15px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.sign-up-container .text-link {
+  color: #007bff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.sign-up-container .text-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Untuk mobile */
+@media (max-width: 768px) {
+  .sign-up-container .switch-text {
+    font-size: 0.9rem;
+    margin-top: 15px;
+  }
+}
