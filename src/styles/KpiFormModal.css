@@ -1,0 +1,643 @@
+/* BACKDROP */
+.rsia-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 35, 102, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  animation: rsia-fadeIn 0.3s forwards;
+}
+@keyframes rsia-fadeIn { to { opacity: 1; } }
+@keyframes rsia-fadeOut { to { opacity: 0; } }
+
+/* MODAL */
+.rsia-modal {
+  background-color: #ffffff;
+  width: 90%; max-width: 700px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1),
+              0 8px 20px rgba(0,0,0,0.15),
+              0 12px 40px rgba(0,0,0,0.2);
+  overflow: hidden;
+  transform: translateY(-50px);
+  opacity: 0;
+  animation: rsia-slideIn 0.4s forwards;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+@keyframes rsia-slideIn { to { transform: translateY(0); opacity: 1; } }
+
+/* MODAL HEADER */
+.rsia-modal-header {
+  background-color: #3eb7b3;
+  color: #fff;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #3eb7b3;
+}
+.rsia-modal-header h5 { margin: 0; font-size: 1.3rem; font-weight: 600; }
+.rsia-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.rsia-modal-close:hover {
+  transform: rotate(90deg);
+  color: #ff6961;
+}
+
+/* MODAL BODY */
+.rsia-modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* FORM GROUP */
+.rsia-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rsia-form-group label { font-weight: 500; color: #003080; }
+.rsia-form-group input,
+.rsia-form-group select {
+  padding: 10px 12px;
+  border: 1px solid #a0bfff;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+  background-color: #fff;
+  color: #003080;
+}
+.rsia-form-group input:focus,
+.rsia-form-group select:focus {
+  border-color: #0046b8;
+  box-shadow: 0 0 8px rgba(0, 70, 184, 0.3);
+}
+.rsia-form-group input::placeholder { color: #aac4ff; transition: all 0.3s ease; }
+.rsia-form-group input:focus::placeholder { color: transparent; }
+
+/* SELECT (Dropdown) */
+.rsia-form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='14' height='10' viewBox='0 0 14 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 2L7 8L13 2' stroke='%230046B8' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+}
+.rsia-form-group select option {
+  background: #f0f4ff;
+  color: #003080;
+  padding: 8px;
+}
+.rsia-form-group select:disabled {
+  background-color: #e6ecff;
+  color: #7a8bbf;
+  cursor: not-allowed;
+}
+
+/* FORM ROW */
+.rsia-form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.rsia-form-row > div { flex: 1 1 30%; display: flex; flex-direction: column; gap: 6px; }
+
+/* FILE UPLOAD */
+.rsia-form-group input[type="file"] {
+  border: 1px solid #a0bfff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #003080;
+  transition: all 0.3s ease;
+}
+.rsia-form-group input[type="file"]:focus {
+  border-color: #0046b8;
+  box-shadow: 0 0 8px rgba(0, 70, 184, 0.3);
+}
+.rsia-form-group input[type="file"]::-webkit-file-upload-button {
+  cursor: pointer;
+  background: #0046b8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.rsia-form-group input[type="file"]::-webkit-file-upload-button:hover {
+  background: #003080;
+}
+
+/* CANVAS TANDA TANGAN */
+.rsia-form-group canvas {
+  border: 1px solid #0046b8;
+  border-radius: 8px;
+  background-color: #fff;
+  width: 100%;
+  height: 200px;
+  cursor: crosshair;
+}
+
+/* CLEAR BUTTON */
+.rsia-form-group button.clear-canvas {
+  margin-top: 6px;
+  width: 100px;
+  padding: 8px 12px;
+  border: 1px solid #0046b8;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #0046b8;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.rsia-form-group button.clear-canvas:hover {
+  background-color: #d6e0ff;
+}
+
+/* MODAL FOOTER */
+.rsia-modal-footer {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: #e6ecff;
+  border-top: 2px solid #c0d4ff;
+}
+.rsia-modal-footer button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.rsia-modal-footer button:first-child {
+  background-color: #ffffff;
+  color: #0046b8;
+  border: 1px solid #0046b8;
+}
+.rsia-modal-footer button:first-child:hover { background-color: #d6e0ff; }
+.rsia-modal-footer button:last-child {
+  background: linear-gradient(135deg, #0052cc, #0046b8);
+  color: #fff;
+}
+.rsia-modal-footer button:last-child:hover {
+  background: linear-gradient(135deg, #003080, #002060);
+}
+.rsia-modal-footer button:active { transform: scale(0.97); }
+
+/* SCROLLBAR */
+.rsia-modal-body::-webkit-scrollbar { width: 8px; }
+.rsia-modal-body::-webkit-scrollbar-track { background: #d6e0ff; border-radius: 8px; }
+.rsia-modal-body::-webkit-scrollbar-thumb { background: #3eb7b3; border-radius: 8px; }
+
+/* DROPDOWN LIST */
+.rsia-dropdown {
+  position: absolute;
+  top: 100%; left: 0; right: 0;
+  background: #f0f4ff;
+  border: 1px solid #a0bfff;
+  border-radius: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 999;
+  margin-top: 6px;
+  padding: 0;
+  list-style: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.rsia-dropdown li {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.rsia-dropdown li span.rsia-nama { font-weight: 600; font-size: 1rem; color: #0046b8; }
+.rsia-dropdown li small.rsia-detail { font-size: 0.85rem; color: #003080; }
+.rsia-dropdown li:hover { background-color: #c0d4ff; transform: translateX(5px); }
+.rsia-dropdown li:active { background-color: #a0bfff; }
+
+/* ============================= */
+/* TOMBOL CANVAS (Clear & Simpan)*/
+/* ============================= */
+.rsia-canvas-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.rsia-canvas-footer button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+.rsia-canvas-footer button.clear-canvas {
+  background-color: #ffffff;
+  color: #0046b8;
+  border: 1px solid #0046b8;
+}
+.rsia-canvas-footer button.clear-canvas:hover {
+  background-color: #d6e0ff;
+}
+
+/* BUTTONS */
+.rsia-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+.rsia-btn-primary {
+  background-color: #006c80;
+  color: #fff;
+}
+.rsia-btn-primary:hover { background-color: #45a049; }
+.rsia-btn-secondary {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+.rsia-btn-secondary:hover { background-color: #e0e0e0; }
+
+/* CANVAS & PREVIEW */
+.rsia-canvas {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.rsia-preview {
+  margin-top: 5px;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* ============================= */
+/* RESPONSIVE */
+/* ============================= */
+
+/* Tablet */
+@media screen and (max-width: 1024px) {
+  .rsia-modal { width: 95%; }
+  .rsia-modal-header h5 { font-size: 1.2rem; }
+  .rsia-form-group input, .rsia-form-group select { font-size: 0.95rem; padding: 9px 10px; }
+}
+
+/* Mobile Large */
+@media screen and (max-width: 768px) {
+  .rsia-modal { width: 95%; max-width: 95%; }
+  .rsia-form-row { flex-direction: column; }
+  .rsia-modal-header h5 { font-size: 1.1rem; }
+  .rsia-modal-footer { flex-direction: column; align-items: stretch; }
+  .rsia-modal-footer button { width: 100%; }
+}
+
+/* Mobile Small */
+@media screen and (max-width: 480px) {
+  .rsia-modal { border-radius: 8px; width: 100%; margin: 0 10px; }
+  .rsia-modal-body { padding: 16px; }
+  .rsia-modal-header, .rsia-modal-footer { padding: 12px 16px; }
+  .rsia-form-group label { font-size: 0.9rem; }
+  .rsia-form-group input, .rsia-form-group select { font-size: 0.9rem; padding: 8px 10px; }
+  .rsia-modal-header h5 { font-size: 1rem; }
+}
+
+/* ============================= */
+/* ADDITIONAL STYLES (NEW)      */
+/* - Styling untuk preview,     */
+/*   tombol Tambah, tanda tangan*/
+/* - Styling untuk batch list   */
+/* - Responsif tambahan        */
+/* ============================= */
+
+/* Preview container (file preview area) */
+.rsia-preview-wrap {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.rsia-preview-wrap .rsia-preview {
+  flex: 1 1 200px;
+  max-height: 220px;
+  object-fit: contain;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid #dfeaff;
+  box-shadow: 0 2px 6px rgba(0,70,184,0.06);
+}
+
+/* preview header/title */
+.rsia-preview-title {
+  width: 100%;
+  font-weight: 600;
+  color: #003080;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+/* Style tombol "Tambah" (form add) - menyesuaikan desain modal */
+.rsia-form-group button.add-batch,
+.rsia-form-group button[type="button"].add-batch {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: linear-gradient(135deg,#0052cc,#0046b8);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(4,70,184,0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+.rsia-form-group button.add-batch:disabled,
+.rsia-form-group button.add-batch[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.rsia-form-group button.add-batch:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(4,70,184,0.14);
+}
+
+/* Tanda tangan area text small adjustments */
+.rsia-form-group .rsia-sign-label {
+  display: block;
+  color: #003080;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.rsia-form-group .rsia-sign-hint {
+  display: block;
+  color: #466fb3;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+/* Hapus tanda tangan (clear) button consistent style */
+.rsia-form-group button.clear-sign {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #c0d4ff;
+  background: #fff;
+  color: #0046b8;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+.rsia-form-group button.clear-sign:hover {
+  background: #d6e0ff;
+  transform: translateY(-1px);
+}
+
+/* Batch list (Daftar Indikator yang ditambahkan) */
+.rsia-batch-list {
+  background: linear-gradient(180deg, #fbfdff 0%, #f0f4ff 100%);
+  border: 1px solid #dbe9ff;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.rsia-batch-list label {
+  font-weight: 600;
+  color: #003080;
+  margin-bottom: 8px;
+  display: block;
+}
+.rsia-batch-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rsia-batch-list ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e6efff;
+  box-shadow: 0 2px 6px rgba(0,70,184,0.03);
+  font-size: 0.95rem;
+  color: #003080;
+}
+.rsia-batch-list ul li .batch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rsia-batch-list ul li .batch-info .indikator {
+  font-weight: 700;
+  color: #0046b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rsia-batch-list ul li .batch-info .meta {
+  font-size: 0.85rem;
+  color: #5b74a8;
+}
+
+/* Hapus tombol pada list */
+.rsia-batch-list ul li button.delete-batch {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ff6b6b;
+  background: #fff;
+  color: #b30000;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.12s ease;
+  flex: 0 0 auto;
+}
+.rsia-batch-list ul li button.delete-batch:hover {
+  background: #ffecec;
+  transform: translateY(-2px);
+}
+
+/* Small compact view for long names (adds subtitle showing unit) */
+.rsia-batch-list ul li .right-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Accessibility: focus outlines */
+.rsia-form-group input:focus,
+.rsia-form-group select:focus,
+.rsia-form-group button:focus,
+.rsia-batch-list ul li button:focus {
+  outline: 3px solid rgba(0,70,184,0.12);
+  outline-offset: 2px;
+}
+
+/* Mobile-specific adjustments for new elements */
+@media screen and (max-width: 768px) {
+  .rsia-preview-wrap { flex-direction: column; }
+  .rsia-preview-wrap .rsia-preview { max-height: 180px; width: 100%; }
+  .rsia-form-group button.add-batch { width: 100%; }
+  .rsia-batch-list ul li { flex-direction: column; align-items: stretch; gap: 6px; }
+  .rsia-batch-list ul li .right-actions { justify-content: flex-end; width: 100%; }
+  .rsia-form-group canvas { height: 160px; }
+}
+
+/* Very small phones (narrow screens) */
+@media screen and (max-width: 420px) {
+  .rsia-form-group label { font-size: 0.88rem; }
+  .rsia-form-row > div { flex: 1 1 100%; }
+  .rsia-form-group input, .rsia-form-group select { padding: 8px 10px; font-size: 0.9rem; }
+  .rsia-form-group canvas { height: 140px; }
+  .rsia-batch-list ul li { padding: 10px; font-size: 0.92rem; }
+  .rsia-batch-list ul li .batch-info .indikator { font-size: 0.96rem; }
+  .rsia-form-group button.clear-sign,
+  .rsia-form-group button.add-batch,
+  .rsia-form-group button.clear-canvas { width: 100%; }
+}
+
+/* Extra touch target spacing for very small screens */
+@media screen and (max-width: 360px) {
+  .rsia-modal { padding: 6px; }
+  .rsia-modal-body { gap: 12px; }
+  .rsia-form-group button { padding: 10px 12px; font-size: 0.95rem; }
+  .rsia-batch-list ul li button.delete-batch { padding: 8px 12px; }
+}
+
+/* Small visual helpers (icons/text) */
+.rsia-batch-badge {
+  background: rgba(0,70,184,0.08);
+  color: #003080;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.kpi-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 0, 0, 0.2); /* warna dasar */
+  border-top-color: #ffffff; /* warna putaran */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===============================
+   INPUT TERKUNCI / READ-ONLY
+   =============================== */
+.rsia-input-locked {
+  background-color: #f1f3f5 !important; /* abu-abu konsisten */
+  color: #6c757d !important;            /* teks abu-abu */
+  border: 1px solid #ced4da !important;
+  cursor: not-allowed;
+}
+
+/* Tetap abu-abu saat focus */
+.rsia-input-locked:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #ced4da !important;
+  background-color: #f1f3f5 !important;
+}
+
+/* Tetap abu-abu saat hover */
+.rsia-input-locked:hover {
+  background-color: #f1f3f5 !important;
+}
+
+/* Untuk SELECT juga (penting) */
+select.rsia-input-locked {
+  background-color: #f1f3f5 !important;
+  color: #6c757d !important;
+  pointer-events: none; /* benar-benar tidak bisa diinteraksi */
+}
+
+/* ================== TARGET LABEL ================== */
+.rsia-target-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+/* ================== CUSTOM CHECKBOX ================== */
+.rsia-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rsia-checkbox-wrapper input {
+  display: none;
+}
+
+.rsia-checkbox-custom {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #adb5bd;
+  border-radius: 4px;
+  background-color: #ffffff;
+  position: relative;
+}
+
+.rsia-checkbox-wrapper input:checked + .rsia-checkbox-custom {
+  background-color: #4a90e2;
+  border-color: #4a90e2;
+}
+
+.rsia-checkbox-wrapper input:checked + .rsia-checkbox-custom::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.rsia-checkbox-text {
+  font-size: 13px;
+  color: #495057;
+}
